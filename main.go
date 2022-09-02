@@ -23,13 +23,13 @@ const (
 )
 
 var (
-	Read            = color.RGBA{0xff, 0x0, 0x0, 0xff}
-	Green           = color.RGBA{0x0, 0xff, 0x0, 0xff}
+	Red             = color.RGBA{0xff, 0x0, 0x0, 0xff}
 	Yellow          = color.RGBA{0xff, 0xff, 0x0, 0xff}
+	Blue            = color.RGBA{0x00, 0x00, 0xff, 0xff}
 	mplusNormalFont font.Face
 	groupYellow     []*Atom
-	groupGreen      []*Atom
-	groupRead       []*Atom
+	groupBlue       []*Atom
+	groupRed        []*Atom
 )
 
 func init() {
@@ -88,20 +88,20 @@ func rule(group1, group2 []*Atom, g float64) {
 			dx := a.x - b.x
 			dy := a.y - b.y
 			d := math.Sqrt(dx*dx + dy*dy)
-			if d > 0 && d < 70 {
+			if d > 0 && d < 50 {
 				force := (g * 1) / d
 				fx += force * dx
 				fy += force * dy
 			}
 		}
-		a.vx = (a.vx + fx) * 0.2
-		a.vy = (a.vy + fy) * 0.2
+		a.vx = (a.vx + fx) * 0.5
+		a.vy = (a.vy + fy) * 0.5
 		a.x += a.vx
 		a.y += a.vy
-		if a.x <= 100 || a.x >= screenWidth {
+		if a.x <= 10 || a.x >= screenWidth-10 {
 			a.vx *= -1
 		}
-		if a.y <= 100 || a.y >= screenHeight {
+		if a.y <= 10 || a.y >= screenHeight-10 {
 			a.vy *= -1
 		}
 	}
@@ -119,13 +119,11 @@ func (g *Game) Update() error {
 	if g.counter%ebiten.TPS() == 0 {
 
 	}
-	rule(groupGreen, groupGreen, -0.10)
-	rule(groupGreen, groupRead, -0.15)
-	rule(groupGreen, groupYellow, 0.25)
-	rule(groupRead, groupRead, -0.25)
-	rule(groupRead, groupGreen, -0.65)
-	rule(groupYellow, groupYellow, 0.35)
-	rule(groupYellow, groupRead, -0.25)
+
+	rule(groupBlue, groupRed, -0.3)
+	rule(groupRed, groupBlue, -0.3)
+	rule(groupRed, groupRed, 0.03)
+	rule(groupYellow, groupRed, 0.20)
 
 	g.counter++
 	return nil
@@ -143,16 +141,16 @@ func (g *Game) Draw(screen *ebiten.Image) {
 }
 
 func (g *Game) Layout(outsideWidth, outsideHeight int) (int, int) {
-	return screenWidth * 1, screenHeight * 1
+	return screenWidth * 2, screenHeight * 2
 }
 
 func main() {
 	ebiten.SetWindowSize(screenWidth, screenHeight)
 	ebiten.SetWindowTitle("Live")
 	g := &Game{}
-	groupYellow = g.createGroup(300, Yellow)
-	groupGreen = g.createGroup(300, Green)
-	groupRead = g.createGroup(400, Read)
+	groupYellow = g.createGroup(400, Yellow)
+	groupRed = g.createGroup(200, Red)
+	groupBlue = g.createGroup(200, Blue)
 	if err := ebiten.RunGame(g); err != nil {
 		log.Fatal(err)
 	}
